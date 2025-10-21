@@ -26,10 +26,9 @@ Facilitar la creación rápida de un visualizador web completo, listo para compa
 ## 📁 Estructura del proyecto
 
 ```
-pc2web/
 ├── php/
 │   └── php.exe (versión portable)
-├── www/
+├── www/pc2web
 │   ├── index.php
 │   ├── inc/
 │   │   ├── upload.php
