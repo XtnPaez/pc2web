@@ -10,7 +10,7 @@ Su objetivo es simplificar la publicación y difusión de información geográfi
 - Entorno local, sin instalación ni dependencias externas.  
 - Compatible tanto con **PHP Portable** como con **XAMPP**.  
 - Estructura unificada en todas las máquinas:  
-  `C:\Users\cpaez\devstack\www\pc2web`  
+  `...\pc2web`  
 
 ## Características principales
 - Carga de una o múltiples capas GeoJSON con estilos.  
@@ -19,71 +19,14 @@ Su objetivo es simplificar la publicación y difusión de información geográfi
 - Soporte para metadatos y configuración visual.  
 - Sin conexión a bases de datos ni servidores externos.
 
-## 🧩 Requisitos
+## Tecnologías
+- **Frontend:** Bootstrap 5, Leaflet 1.9.x, JS.  
+- **Backend:** PHP plano (portable o XAMPP).  
+- **Estructura de salida:** archivos estáticos HTML, CSS y JS.
 
-- **PHP Portable 8.x** o superior.  
-- **Navegador web moderno** (Chrome, Edge o Firefox).  
-- No requiere conexión a internet ni instalación adicional.
+## Estado del proyecto
+Primera versión estable para entorno local unificado (multi-PC).  
+Se prevé evolución hacia un generador modular de componentes y estilos temáticos.
 
-## 📁 Estructura del proyecto
-
-```
-├── php/
-│   └── php.exe (versión portable)
-├── www/pc2web
-│   ├── index.php
-│   ├── inc/
-│   │   ├── upload.php
-│   │   ├── render.php
-│   │   ├── export.php
-│   │   └── reset.php
-│   ├── assets/
-│   │   ├── css/
-│   │   │   └── style.css
-│   │   ├── js/
-│   │   │   ├── app.js
-│   │   │   └── map.js
-│   │   └── img/
-│   ├── templates/
-│   │   ├── layout.html
-│   │   ├── layer_card.html
-│   │   └── popup.html
-│   └── export/
-│       └── (proyectos generados)
-└── start.bat
-```
-
-## ▶️ Cómo ejecutar
-
-1. Descomprimir el paquete completo en una carpeta.  
-2. Ejecutar el archivo `start.bat`.  
-3. Se abrirá automáticamente el navegador en  
-   **http://localhost:8080**  
-4. Usar la interfaz para:
-   - Cargar capas (GeoJSON + estilo + metadata)
-   - Visualizarlas en el mapa
-   - Generar el proyecto final (HTML autosuficiente)
-
-## 🧱 Estructura del export final
-
-Cada proyecto generado incluirá:
-
-```
-mi_proyecto/
-├── index.html
-├── assets/
-│   ├── leaflet/
-│   ├── bootstrap/
-│   ├── css/
-│   └── js/
-├── data/
-│   └── capas.geojson
-└── metadata.json
-```
-
-## 🧰 Créditos técnicos
-
-- **Bootstrap 5** para el layout.
-- **Leaflet** para el mapa interactivo.
-- **PHP Portable** como backend local sin instalación.
-- **QGIS** como fuente de los GeoJSON y estilos.
+---
+© 2025 Cristian Páez | Proyecto pc2web
