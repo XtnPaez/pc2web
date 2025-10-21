@@ -15,13 +15,12 @@ La aplicación se ejecuta de forma **local**, sin requerir instalación, y puede
 ### Estructura de carpetas
 
 pc2web/
-├── php/                → PHP portable (si aplica)
-├── www/
-│   ├── index.php       → interfaz principal
-│   ├── inc/            → scripts PHP auxiliares
-│   ├── assets/         → CSS, JS, íconos
-│   ├── templates/      → plantillas HTML
-│   └── export/         → salida de proyectos generados
+ ├── www/
+ ├── index.php       → interfaz principal
+ ├── inc/            → scripts PHP auxiliares
+ ├── assets/         → CSS, JS, íconos
+ ├── templates/      → plantillas HTML
+ └── export/         → salida de proyectos generados
 
 ## 3. Flujo de funcionamiento
 
