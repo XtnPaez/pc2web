@@ -1,73 +1,65 @@
-# Proyecto pc2web — Diseño y flujo de desarrollo
+# Documento técnico del proyecto pc2web
 
-## 🎯 Propósito general
+## 1. Introducción
+El proyecto **pc2web** surge para automatizar la generación de visualizadores web a partir de capas exportadas desde QGIS, reduciendo al mínimo el trabajo manual requerido para publicar mapas en HTML.
 
-Construir una herramienta local y autosuficiente para generar visualizadores HTML a partir de datos espaciales exportados desde QGIS.
+La aplicación se ejecuta de forma **local**, sin requerir instalación, y puede correrse tanto mediante **PHP Portable** (desde cualquier carpeta) como dentro de un entorno **XAMPP** (`htdocs/pc2web`).
 
-## 🏗️ Arquitectura general
+## 2. Arquitectura general
 
-**Tipo de aplicación:** Local, ejecutada sobre PHP portable.  
-**Interfaz:** Web, con Bootstrap + Leaflet.  
-**Backend:** PHP puro (sin frameworks).  
-**Flujo:**  
-1. Carga de GeoJSON + estilo + metadata.  
-2. Render de previsualización con Leaflet.  
-3. Posibilidad de agregar múltiples capas.  
-4. Exportación del proyecto HTML.  
-5. Reset del entorno.
+**Tipo de aplicación:** Web local, autosuficiente  
+**Frontend:** HTML + Bootstrap + Leaflet  
+**Backend:** PHP plano  
+**Almacenamiento:** Archivos temporales y carpeta `/export` para proyectos generados
 
-## 🧠 Flujo funcional
+### Estructura de carpetas
 
-1. **Inicio:**  
-   Se abre `index.php` → muestra formulario inicial y mapa vacío.
+pc2web/
+├── php/                → PHP portable (si aplica)
+├── www/
+│   ├── index.php       → interfaz principal
+│   ├── inc/            → scripts PHP auxiliares
+│   ├── assets/         → CSS, JS, íconos
+│   ├── templates/      → plantillas HTML
+│   └── export/         → salida de proyectos generados
 
-2. **Carga de capa:**  
-   El usuario selecciona un archivo GeoJSON, un JSON de estilo y un bloque de metadata.  
-   PHP almacena temporalmente los datos y llama a `render.php`.
+## 3. Flujo de funcionamiento
 
-3. **Previsualización:**  
-   La capa se carga sobre el mapa usando Leaflet y el estilo indicado.  
-   Se genera una “tarjeta” (layer card) en la interfaz para controlar visibilidad y nombre.
+1. **Carga de capa:** el usuario selecciona un archivo GeoJSON y su configuración.  
+2. **Visualización:** se renderiza la capa en Leaflet con su simbología.  
+3. **Configuración:** se permite editar título, metadatos, estilo, colores, etc.  
+4. **Exportación:** se genera un paquete HTML con todo embebido (listo para compartir).  
+5. **Reset:** limpia la sesión para iniciar un nuevo proyecto.
 
-4. **Agregar más capas:**  
-   Repite el proceso. Cada capa se visualiza y se lista.
+## 4. Componentes clave
 
-5. **Generar proyecto:**  
-   PHP toma las capas cargadas y construye un paquete HTML completo dentro de `/export`.
+- **index.php:** interfaz y controlador principal del flujo.  
+- **inc/upload.php:** maneja carga de archivos.  
+- **inc/export.php:** genera el HTML final empaquetado.  
+- **assets/js/app.js:** lógica de renderización y controles.  
+- **templates/map_template.html:** base del visualizador exportado.
 
-6. **Reset:**  
-   El botón “Reset” vacía los temporales y recarga la interfaz.
+## 5. Estándares y convenciones
 
-## 📦 Estructura modular del backend
+- Código PHP sin dependencias externas.  
+- Bootstrap 5 para interfaz.  
+- Leaflet 1.9.x como motor de mapa.  
+- Identación con 4 espacios y comentarios normalizados.  
+- Los paquetes exportados deben ser autosuficientes (sin rutas absolutas).
 
-| Archivo | Función |
-|----------|----------|
-| `upload.php` | Gestiona la subida de archivos (GeoJSON, estilos, metadata). |
-| `render.php` | Genera los fragmentos HTML y JS para mostrar la capa en el mapa. |
-| `export.php` | Construye la carpeta exportada con el HTML final y dependencias. |
-| `reset.php` | Limpia la sesión y temporales. |
+## 6. Plan de desarrollo
 
-## 🎨 UI y diseño visual
+### Etapa actual
+- Implementación del flujo base completo (carga, render, export).  
+- Validación en entorno PHP portable y XAMPP.  
 
-- **Navbar superior** con botones:
-  - “Cargar capa”
-  - “Generar proyecto”
-  - “Reset”
-- **Panel lateral** (opcional) con lista de capas.
-- **Mapa Leaflet** ocupando el área central.
-- **Notificaciones** (Bootstrap Toasts o Alerts) para avisos.
+### Próximas etapas
+- Soporte para múltiples capas simultáneas.  
+- Incorporación de editor de estilo visual.  
+- Módulo de plantillas temáticas.  
+- Exportación directa en ZIP.  
 
-## 🧪 Plan de pruebas inicial
-
-1. Subida de GeoJSON → visible en el mapa.  
-2. Subida de estilo → aplicado correctamente.  
-3. Varias capas → visibles e independientes.  
-4. Export → genera carpeta con `index.html` funcional.  
-5. Reset → limpia correctamente la sesión.
-
-## 🧭 Criterios de éxito
-
-- Correr sin instalación.
-- Exportar proyectos HTML autosuficientes.
-- Interfaz estable, simple y clara.
-- Mapa previsualizado igual que el final.
+---
+**Autor:** Cristian Páez  
+**Repositorio:** pc2web (GitHub)  
+**Versión del documento:** 2025-10  
