@@ -1,32 +1,56 @@
 # pc2web
 
-**Generador de visualizadores web desde QGIS**
+Generador de entregables web a partir de capas exportadas desde QGIS.
 
-## Propósito
-El proyecto **pc2web** permite transformar capas exportadas desde QGIS (en formato GeoJSON) en visualizadores web HTML interactivos utilizando **Leaflet** y **Bootstrap**.  
-Su objetivo es simplificar la publicación y difusión de información geográfica mediante una aplicación liviana, portable y autosuficiente.
+## 🚀 Objetivo
+`pc2web` permite convertir insumos geoespaciales (GeoJSON, estilos y metadatos) en visualizadores HTML autosuficientes basados en Leaflet y Bootstrap.
 
-## Alcance
-- Entorno local, sin instalación ni dependencias externas.  
-- Compatible tanto con **PHP Portable** como con **XAMPP**.  
-- Estructura unificada en todas las máquinas:  
-  `...\pc2web`  
+## 🧱 Estructura general del proyecto
 
-## Características principales
-- Carga de una o múltiples capas GeoJSON con estilos.  
-- Previsualización directa sobre Leaflet.  
-- Generación de un paquete HTML exportable y autosuficiente.  
-- Soporte para metadatos y configuración visual.  
-- Sin conexión a bases de datos ni servidores externos.
+```
+pc2web/
+├── src/                 # Código fuente del generador
+│   ├── core/            # Módulos principales del motor
+│   ├── utils/           # Funciones de apoyo
+│   ├── templates/       # Plantillas HTML base
+│   ├── exporters/       # Transformadores QGIS → HTML
+│   └── cli/             # Scripts de automatización
+├── data/                # Insumos del usuario
+│   ├── input/           # GeoJSON, estilos, metadata
+│   └── cache/           # Archivos temporales
+├── build/               # Salidas locales
+│   └── export/          # Entregables finales
+├── docs/                # Documentación
+│   ├── proyecto.md
+│   └── README.md
+├── tests/               # Pruebas y validaciones
+├── config/              # Configuración global
+│   └── settings.yaml
+├── logs/                # Registro de eventos
+└── pc2web.txt           # Guía técnica interna
+```
 
-## Tecnologías
-- **Frontend:** Bootstrap 5, Leaflet 1.9.x, JS.  
-- **Backend:** PHP plano (portable o XAMPP).  
-- **Estructura de salida:** archivos estáticos HTML, CSS y JS.
+## 🧩 Tecnologías base
 
-## Estado del proyecto
-Primera versión estable para entorno local unificado (multi-PC).  
-Se prevé evolución hacia un generador modular de componentes y estilos temáticos.
+- Leaflet 1.9.x  
+- Bootstrap 5.x  
+- JavaScript (sin frameworks pesados)  
+- YAML para configuración  
+- Compatibilidad multiplataforma  
 
----
-© 2025 Cristian Páez | Proyecto pc2web
+## 📦 Entregables
+
+1. Visualizadores HTML autosuficientes.  
+2. Carpeta `/export` con proyectos generados.  
+3. Documentación de uso (`README.md`, `proyecto.md`).
+
+## 🧭 Modo de uso
+
+1. Colocar archivos GeoJSON y estilos en `/data/input/`
+2. Ejecutar el script de generación en `/src/cli/`
+3. Revisar resultados en `/build/export/`
+4. Validar con los tests disponibles.
+
+## 🧰 Mantenimiento
+
+Las guías técnicas y decisiones de arquitectura están documentadas en `pc2web.txt`.
