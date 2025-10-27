@@ -1,0 +1,53 @@
+# pc2web: Guía técnica interna
+
+## Propósito
+Documento interno de referencia para desarrolladores y asistentes que colaboren en la evolución del proyecto `pc2web`.
+
+## Arquitectura conceptual
+El proyecto no depende de servidores PHP ni XAMPP. Es un entorno de desarrollo multiplataforma destinado a generar **visualizadores HTML estáticos**.
+
+### Objetivo principal
+Transformar insumos (GeoJSON + estilo + metadata) en un **paquete HTML autosuficiente** (Bootstrap + Leaflet).
+
+## Estructura base
+
+pc2web/
+├── src/
+│   ├── core/
+│   ├── utils/
+│   ├── templates/
+│   ├── exporters/
+│   └── cli/
+├── data/
+│   ├── input/
+│   └── cache/
+├── build/
+│   └── export/
+├── docs/
+├── tests/
+├── config/
+├── logs/
+└── pc2web.txt
+
+## Librerías sugeridas
+
+- Leaflet 1.9.x
+- Bootstrap 5.x
+- PyYAML (para lectura de configuración)
+- Jinja2 (para renderizado de plantillas HTML)
+- rich / loguru (para logging elegante)
+
+## Flujo técnico del generador
+
+1. Cargar archivos desde `/data/input/`
+2. Validar estructura y estilo
+3. Combinar insumos con plantillas (`/src/templates/`)
+4. Generar salida HTML en `/build/export/`
+5. Registrar logs en `/logs/`
+
+## Consideraciones de desarrollo
+
+- Código modular y documentado
+- Plantillas independientes del backend
+- Entorno reproducible (virtualenv o similar)
+- Configuración YAML unificada
