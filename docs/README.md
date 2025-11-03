@@ -1,56 +1,44 @@
 # pc2web
 
-Generador de entregables web a partir de capas exportadas desde QGIS.
+## 🧭 Descripción general
 
-## 🚀 Objetivo
-`pc2web` permite convertir insumos geoespaciales (GeoJSON, estilos y metadatos) en visualizadores HTML autosuficientes basados en Leaflet y Bootstrap.
+**pc2web** es una herramienta en PHP + JavaScript que transforma insumos
+de QGIS (capas, estilos y metadatos) en proyectos web listos para
+publicar. Está pensada para funcionar sin dependencias de base de datos
+ni entornos complejos, siendo totalmente portable.
 
-## 🧱 Estructura general del proyecto
+## ⚙️ Características principales
 
-```
-pc2web/
-├── src/                 # Código fuente del generador
-│   ├── core/            # Módulos principales del motor
-│   ├── utils/           # Funciones de apoyo
-│   ├── templates/       # Plantillas HTML base
-│   ├── exporters/       # Transformadores QGIS → HTML
-│   └── cli/             # Scripts de automatización
-├── data/                # Insumos del usuario
-│   ├── input/           # GeoJSON, estilos, metadata
-│   └── cache/           # Archivos temporales
-├── build/               # Salidas locales
-│   └── export/          # Entregables finales
-├── docs/                # Documentación
-│   ├── proyecto.md
-│   └── README.md
-├── tests/               # Pruebas y validaciones
-├── config/              # Configuración global
-│   └── settings.yaml
-├── logs/                # Registro de eventos
-└── pc2web.txt           # Guía técnica interna
-```
+-   Interfaz dual: **Productor / Visor**
+-   Soporte para carga y previsualización de capas GeoJSON.
+-   Integración con **Leaflet** y **Bootstrap**.
+-   Exportación automática a un paquete HTML autosuficiente.
+-   Ejecución local simple: `php -S localhost:8000`.
 
-## 🧩 Tecnologías base
+## 🗂️ Estructura del repositorio
 
-- Leaflet 1.9.x  
-- Bootstrap 5.x  
-- JavaScript (sin frameworks pesados)  
-- YAML para configuración  
-- Compatibilidad multiplataforma  
+-   `index.php`: punto de entrada del sistema.
+-   `config/`: parámetros globales y rutas.
+-   `modules/`: componentes PHP reutilizables (navbar, mapa, paneles).
+-   `assets/`: estilos, scripts e imágenes.
+-   `data/`: almacenamiento de insumos y caché.
+-   `build/export/`: resultados finales.
+-   `docs/`: documentación técnica y roadmap.
 
-## 📦 Entregables
+## 🚀 Uso rápido
 
-1. Visualizadores HTML autosuficientes.  
-2. Carpeta `/export` con proyectos generados.  
-3. Documentación de uso (`README.md`, `proyecto.md`).
+1.  Copiar el proyecto en una carpeta local.
 
-## 🧭 Modo de uso
+2.  Ejecutar:
 
-1. Colocar archivos GeoJSON y estilos en `/data/input/`
-2. Ejecutar el script de generación en `/src/cli/`
-3. Revisar resultados en `/build/export/`
-4. Validar con los tests disponibles.
+    ``` bash
+    php -S localhost:8000
+    ```
 
-## 🧰 Mantenimiento
+3.  Acceder desde el navegador a `http://localhost:8000`.
 
-Las guías técnicas y decisiones de arquitectura están documentadas en `pc2web.txt`.
+## 📘 Documentación
+
+-   `pc2web.txt`: guía técnica interna.
+-   `proyecto.md`: visión general del desarrollo y lineamientos
+    estratégicos.

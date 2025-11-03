@@ -1,45 +1,64 @@
 # Proyecto pc2web
 
-## 🎯 Propósito
-Desarrollar una herramienta modular que transforme capas QGIS en entregables web listos para publicar, sin depender de servidores PHP ni entornos XAMPP.
+## 🎯 Visión general
+
+El proyecto **pc2web** busca convertir el flujo técnico de creación de
+mapas en QGIS en un proceso web completamente automatizado. Su enfoque
+es simplificar la publicación de capas geográficas sin depender de
+servidores o configuraciones complejas.
+
+El desarrollo se centra en una **arquitectura modular** en PHP +
+JavaScript que pueda ejecutarse en cualquier entorno, desde una
+instalación simple de PHP hasta XAMPP.
+
+## 🌐 Abordaje del desarrollo
+
+El sistema se construye bajo tres principios rectores:
+
+1.  **Autonomía total:** cada exportación debe funcionar como un sitio
+    HTML independiente.
+2.  **Modularidad:** los componentes PHP y JS deben ser reutilizables
+    entre productor y visor.
+3.  **Escalabilidad:** el entorno debe permitir incorporar validaciones,
+    logs y nuevas funciones sin romper compatibilidad.
+
+## 🧩 Estructura definitiva del proyecto
+
+pc2web/ ├── index.php ├── config/ ├── modules/ ├── assets/ ├── data/ ├──
+build/export/ ├── logs/ ├── docs/ └── tests/
 
 ## 🔧 Componentes principales
 
-| Módulo | Descripción |
-|--------|--------------|
-| `core/` | Núcleo de procesamiento y generación HTML |
-| `templates/` | Plantillas base Bootstrap + Leaflet |
-| `exporters/` | Lógica para empaquetar y exportar proyectos |
-| `utils/` | Funciones auxiliares (logs, paths, validaciones) |
-| `cli/` | Scripts ejecutables para automatizar flujos |
-| `data/` | Entrada y cache de usuario |
-| `build/export/` | Resultado final del proceso |
+  Módulo            Descripción
+  ----------------- ----------------------------------------------
+  `config/`         Configuración global (YAML + PHP).
+  `modules/`        Bloques PHP (navbar, mapa, paneles, footer).
+  `assets/`         Estilos, scripts e imágenes.
+  `data/`           Archivos subidos por el productor.
+  `build/export/`   Resultado final autosuficiente.
 
 ## 🧱 Flujo de trabajo
 
-1. **Carga de insumos:** El usuario coloca archivos en `/data/input/`  
-2. **Procesamiento:** `core/` analiza los datos y los combina con plantillas  
-3. **Generación:** `exporters/` crea la estructura HTML autosuficiente  
-4. **Entrega:** El resultado se guarda en `/build/export/` listo para uso web  
+1.  **Carga de insumos:** El productor coloca los archivos en
+    `/data/input/`.
+2.  **Procesamiento:** PHP combina los datos con plantillas modulares.
+3.  **Visualización:** Se muestra la previsualización en la IU.
+4.  **Exportación:** El resultado se guarda en `/build/export/` con
+    nombre de proyecto.
 
-## 📘 Documentación complementaria
+## 🧭 Roadmap general
 
-- `README.md`: guía rápida de instalación y uso.  
-- `pc2web.txt`: especificación técnica interna.  
-
-## 🧭 Roadmap
-
-| Fase | Objetivo | Entregable |
-|------|-----------|-------------|
-| 1 | Diseño de estructura y templates | Base funcional |
-| 2 | Implementación del motor de exportación | Generador activo |
-| 3 | Interfaz CLI | Automatización completa |
-| 4 | Pruebas unitarias y QA | Validación final |
-| 5 | Documentación y empaquetado | Versión lista para producción |
+  Fase   Objetivo                             Entregable
+  ------ ------------------------------------ -------------------------------
+  1      Estructura base + entorno PHP        `index.php` y módulos vacíos
+  2      IU funcional (Leaflet + Bootstrap)   Interfaz productiva
+  3      Motor de exportación                 Proyecto HTML autosuficiente
+  4      Validaciones y logs                  Control de calidad
+  5      Documentación final                  Versión lista para despliegue
 
 ## 🧰 Buenas prácticas
 
-- Mantener plantillas desacopladas del motor.  
-- Controlar logs de procesos en `/logs/`.  
-- Centralizar configuraciones en `config/settings.yaml`.  
-- Documentar cualquier cambio en `docs/`.
+-   Mantener plantillas desacopladas del motor.
+-   Controlar logs de procesos en `/logs/`.
+-   Centralizar configuraciones en `config/settings.yaml`.
+-   Documentar cambios en `docs/`.
