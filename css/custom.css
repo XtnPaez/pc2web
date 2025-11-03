@@ -1,0 +1,72 @@
+/* =============================================
+   pc2webmap - custom.css
+   Estilos base y layout responsive
+   ============================================= */
+
+/* Reset general */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+/* Layout general */
+body {
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa;
+}
+
+/* Navbar fija arriba */
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1030; /* superior a leaflet controls */
+}
+
+/* Espaciado para el contenido bajo la navbar */
+main {
+    margin-top: 56px; /* altura estándar de navbar */
+    margin-bottom: 40px; /* deja espacio para el footer fijo */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 96px);
+}
+
+/* Contenedor del mapa */
+#map {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    background-color: #eaeaea;
+}
+
+/* Footer fijo abajo */
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #212529;
+    color: #f8f9fa;
+    text-align: center;
+    padding: 0.5rem 0;
+    font-size: 0.85rem;
+}
+
+/* Botones del menú */
+.navbar .btn {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.8rem;
+}
+
+/* Responsive tweak */
+@media (max-width: 768px) {
+    .navbar .btn {
+        margin-bottom: 4px;
+        width: 100%;
+    }
+}
