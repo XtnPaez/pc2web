@@ -16,7 +16,7 @@
  * Dependencias:
  *   - Bootstrap 5.x
  *   - Leaflet 1.9.x
- *   - /js/mapa.js
+ *   - /js/map.js
  *   - /js/producer.js
  *   - /css/custom.css
  * ============================================================
@@ -58,16 +58,20 @@
   <main class="flex-fill">
     <div class="d-flex flex-row h-100">
       
-      <!-- Panel lateral izquierdo -->
+      <!-- =====================================================
+           PANEL LATERAL IZQUIERDO
+           ===================================================== -->
       <div id="sidebar"
-          class="border-end bg-light p-2"
-          style="width:300px; overflow-y:auto;">
-        <div id="layer-list" class="mt-3">
-          <!-- Las capas se cargarán dinámicamente desde /data/cache -->
+           class="border-end bg-light p-2"
+           style="width:300px; overflow-y:auto;">
+        <div id="layer-list" class="mt-2">
+          <!-- Las capas validadas se cargarán aquí dinámicamente -->
         </div>
       </div>
 
-      <!-- Contenedor del mapa -->
+      <!-- =====================================================
+           CONTENEDOR PRINCIPAL DEL MAPA
+           ===================================================== -->
       <div class="flex-grow-1 position-relative">
         <div id="map"></div>
       </div>
@@ -90,14 +94,12 @@
        SCRIPTS DEL PROYECTO
        ========================================================= -->
   <script src="js/map.js"></script>       <!-- Inicialización del mapa -->
-  <script src="js/producer.js"></script>   <!-- Control de modo productor / exportación -->
+  <script src="js/producer.js"></script>  <!-- Control de modo productor / validación / exportación -->
 
   <!-- =========================================================
        FIX: Ajustar mapa tras renderizado
        ========================================================= -->
   <script>
-    // Este ajuste garantiza que Leaflet detecte el tamaño correcto
-    // una vez que la página está completamente cargada.
     document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => {
         if (window.map && window.map.invalidateSize) {
