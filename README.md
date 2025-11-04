@@ -1,44 +1,56 @@
-# pc2web
+# pc2web v1.2 — Noviembre 2025
 
-## 🧭 Descripción general
+## Descripción
+**pc2web** convierte insumos GIS (GeoJSON + SLD) en visualizadores web estáticos.
+El resultado es un **paquete HTML autosuficiente** que puede abrirse sin servidor.
 
-**pc2web** es una herramienta en PHP + JavaScript que transforma insumos
-de QGIS (capas, estilos y metadatos) en proyectos web listos para
-publicar. Está pensada para funcionar sin dependencias de base de datos
-ni entornos complejos, siendo totalmente portable.
+## Características
+- Flujo único del **productor** operado desde `index.php` con modales.
+- Validación de capas y generación de `layers.json` en cache temporal.
+- Configuración de popups por capa (`popup_config.json`).
+- Exportación a `build/export/<proyecto>/` con assets JS/CSS.
+- Mapas base: **Argenmap** y **OpenStreetMap**.
+- Sin íconos PNG para marcadores; estilos geométricos por SLD/SVG.
+- Backend **PHP crudo** + Frontend **JavaScript ES6**. UI **Bootstrap 5.x**, mapa **Leaflet 1.9.x**.
 
-## ⚙️ Características principales
+## Estructura mínima
+```
+pc2web/
+├── index.php
+├── js/
+│   ├── map.js
+│   └── producer.js
+├── css/
+│   └── custom.css
+├── data/
+│   ├── input/
+│   │   └── uploads/        # subidas de sesión
+│   └── cache/
+├── build/
+│   └── export/
+├── exporter.php
+└── src/core/validation.php
+```
 
--   Interfaz dual: **Productor / Visor**
--   Soporte para carga y previsualización de capas GeoJSON.
--   Integración con **Leaflet** y **Bootstrap**.
--   Exportación automática a un paquete HTML autosuficiente.
--   Ejecución local simple: `php -S localhost:8000`.
+## Uso
+1. Abrir `index.php`.
+2. **Subir capa**: elegir `.geojson` + `.sld`, cargar nombre del proyecto y descripción.
+3. **Validar capa**: crear cache `tmp_<timestamp>` y `layers.json`.
+4. **Setear popup**: elegir campos visibles y etiquetas. Guarda `popup_config.json` por capa.
+5. **Cargar otra capa** o **Exportar proyecto**.
+6. Abrir `build/export/<proyecto>/index.html` directamente en el navegador.
 
-## 🗂️ Estructura del repositorio
+## Resultado
+```
+build/export/<proyecto>/
+├── index.html
+└── assets/
+    ├── map.js
+    ├── producer.js
+    └── custom.css
+```
 
--   `index.php`: punto de entrada del sistema.
--   `config/`: parámetros globales y rutas.
--   `modules/`: componentes PHP reutilizables (navbar, mapa, paneles).
--   `assets/`: estilos, scripts e imágenes.
--   `data/`: almacenamiento de insumos y caché.
--   `build/export/`: resultados finales.
--   `docs/`: documentación técnica y roadmap.
+El brand del navbar del exportado mostrará el **Nombre del proyecto**.
 
-## 🚀 Uso rápido
-
-1.  Copiar el proyecto en una carpeta local.
-
-2.  Ejecutar:
-
-    ``` bash
-    php -S localhost:8000
-    ```
-
-3.  Acceder desde el navegador a `http://localhost:8000`.
-
-## 📘 Documentación
-
--   `pc2web.txt`: guía técnica interna.
--   `proyecto.md`: visión general del desarrollo y lineamientos
-    estratégicos.
+## Licencia
+2025 — Uso interno con atribución a **pc2web**.

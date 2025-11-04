@@ -17,7 +17,7 @@
 
  // === CONFIGURACIÓN GENERAL ===
 date_default_timezone_set('America/Argentina/Buenos_Aires');
-ini_set('memory_limit', '512M');
+ini_set('memory_limit', '2G');
 
 // === Directorios base ===
 $inputDir = __DIR__ . '/../../data/input/';

@@ -1,27 +1,13 @@
 // =============================================
-// pc2webmap - map.js
+// pc2webmap - map.js (auto‐detector de carpeta cache)
 // ---------------------------------------------
-// Inicialización del mapa principal y gestión
-// de capas validadas por el productor.
-//
-// En este flujo, los mapas base (Argenmap / OSM)
-// se manejan con el control de Leaflet estándar,
-// mientras que las capas validadas se listan
-// en el panel izquierdo (#layer-list).
+// Carga capas en modo productor y export.
+// Detecta automáticamente la carpeta tmp_* más reciente.
 // =============================================
 
+// === 1. MAPA BASE ===
+const map = L.map('map', { center: [-38.4, -63.6], zoom: 4 });
 
-// =====================================================
-// 1. CONFIGURACIÓN BASE DEL MAPA
-// =====================================================
-
-// Crear el mapa centrado en Argentina
-const map = L.map('map', {
-  center: [-38.4, -63.6],
-  zoom: 4
-});
-
-// --- Capas base ---
 const argenmap = L.tileLayer(
   'https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/capabaseargenmap@EPSG%3A3857@png/{z}/{x}/{-y}.png',
   { attribution: '&copy; IGN - Argenmap' }
@@ -32,146 +18,131 @@ const osm = L.tileLayer(
   { attribution: '&copy; OpenStreetMap contributors' }
 );
 
-// Control de mapas base (solo baseMaps, sin capas validadas)
-const baseMaps = { "Argenmap": argenmap, "OpenStreetMap": osm };
-L.control.layers(baseMaps, null, { collapsed: true }).addTo(map);
+L.control.layers({ "Argenmap": argenmap, "OpenStreetMap": osm }, null, { collapsed: true }).addTo(map);
 
-// Diccionario global para almacenar las capas validadas
+// === 2. VARIABLES GLOBALES ===
 const overlayMaps = {};
+const popupConfigs = {};
+let currentCacheFolder = null;
 
+// === 3. DETECTAR MODO EXPORT ===
+const isExport = window.location.pathname.includes('/build/export/');
+console.log(`🧭 Modo actual: ${isExport ? 'EXPORTACIÓN' : 'PRODUCTOR'}`);
 
-// =====================================================
-// 2. CACHE LOCAL DE POPUPS (popup_config.json)
-// =====================================================
-const popupConfigs = {}; // Guarda la configuración por capa
-
-
-// =====================================================
-// 3. FUNCIÓN PRINCIPAL: cargar capas validadas
-// -----------------------------------------------------
-// Lee el archivo layers.json generado en /data/cache/tmp_<fecha>/
-// y crea los checkboxes correspondientes en el panel izquierdo.
-// =====================================================
+// === 4. FUNCIÓN PRINCIPAL ===
 function loadAvailableLayers(cacheFolder) {
-  console.log("📂 Cargando capas desde carpeta:", cacheFolder);
-  window.currentCacheFolder = cacheFolder; // Guardamos referencia global
+  currentCacheFolder = cacheFolder;
+  const jsonPath = `${cacheFolder}/layers.json`;
+  console.log(`📂 Buscando ${jsonPath}`);
 
-  // Leer el descriptor de capas
-  fetch(`data/cache/${cacheFolder}/layers.json`)
-    .then(response => {
-      if (!response.ok) throw new Error("No se encontró layers.json");
-      return response.json();
+  fetch(jsonPath)
+    .then(r => {
+      if (!r.ok) throw new Error(`No se encontró ${jsonPath}`);
+      return r.json();
     })
     .then(layers => {
-      // Aceptar tanto array como objeto único
-      const layerArray = Array.isArray(layers) ? layers : [layers];
-      console.log("Capas encontradas en layers.json:", layerArray);
+      const arr = Array.isArray(layers) ? layers : [layers];
+      console.log(`✅ ${arr.length} capa(s) detectada(s)`);
 
-      // Obtener el panel lateral y limpiar su contenido previo
       const panel = document.getElementById('layer-list');
-      panel.innerHTML = '';
+      if (panel) panel.innerHTML = '';
 
-      // Crear una capa Leaflet por cada entrada en layers.json
-      layerArray.forEach(layerInfo => {
-        if (!layerInfo.geojson) {
-          console.warn(`⚠️ La capa ${layerInfo.name} no tiene ruta GeoJSON válida.`);
-          return;
-        }
-
-        // Cargar el archivo GeoJSON correspondiente
-        fetch(layerInfo.geojson)
-          .then(res => {
-            if (!res.ok) throw new Error(`No se encontró ${layerInfo.geojson}`);
-            return res.json();
-          })
+      arr.forEach(info => {
+        fetch(info.geojson)
+          .then(res => res.json())
           .then(data => {
-            console.log(`✅ Capa "${layerInfo.name}" cargada (${data.features.length} features)`);
-
-            // Crear la capa Leaflet
             const layer = L.geoJSON(data, {
-              onEachFeature: (feature, lyr) => {
-                // Aplicar popups si existe configuración
-                applyPopupToFeature(layerInfo.name, feature, lyr);
-              }
+              onEachFeature: (f, l) => applyPopupToFeature(info.name, f, l)
             });
 
-            // Guardar referencia global para poder activarla/desactivarla
-            overlayMaps[layerInfo.name] = layer;
+            overlayMaps[info.name] = layer;
 
-            // Crear checkbox en el panel izquierdo
-            const div = document.createElement('div');
-            div.classList.add('form-check', 'mb-1');
-            div.innerHTML = `
-              <input class="form-check-input" type="checkbox" id="chk_${layerInfo.name}">
-              <label class="form-check-label" for="chk_${layerInfo.name}">
-                ${layerInfo.name}
-              </label>
-            `;
-            panel.appendChild(div);
-
-            // Manejar activación/desactivación desde el checkbox
-            const chk = document.getElementById(`chk_${layerInfo.name}`);
-            chk.addEventListener('change', (e) => {
-              if (e.target.checked) {
-                layer.addTo(map);
-                console.log(`🟢 Capa "${layerInfo.name}" activada`);
-              } else {
-                map.removeLayer(layer);
-                console.log(`🔴 Capa "${layerInfo.name}" desactivada`);
-              }
-            });
+            if (panel) {
+              const div = document.createElement('div');
+              div.classList.add('form-check', 'mb-1');
+              div.innerHTML = `
+                <input class="form-check-input" type="checkbox" id="chk_${info.name}">
+                <label class="form-check-label" for="chk_${info.name}">
+                  ${info.name}
+                </label>`;
+              panel.appendChild(div);
+              const chk = document.getElementById(`chk_${info.name}`);
+              chk.addEventListener('change', e => {
+                e.target.checked ? layer.addTo(map) : map.removeLayer(layer);
+              });
+            } else {
+              layer.addTo(map);
+              console.log(`🟢 Capa "${info.name}" agregada automáticamente`);
+            }
           })
-          .catch(err => console.error(`Error cargando GeoJSON ${layerInfo.name}:`, err));
+          .catch(err => console.error(`Error cargando ${info.name}:`, err));
       });
     })
     .catch(err => console.error('Error leyendo layers.json:', err));
 }
 
+// === 5. AUTO-DETECCIÓN DE CARPETA CACHE (solo export) ===
+if (isExport) {
+  // Intentar detectar automáticamente la carpeta tmp_* dentro de data/cache/
+  fetch('data/cache/')
+    .then(() => {
+      // Usar fetch() sobre layers.json conocido dentro del export
+      const base = 'data/cache/';
+      fetch(base)
+        .then(() => {
+          // Hacer una pequeña solicitud HEAD a listar contenido (solo local, no server)
+          // Como alternativa, probar múltiples carpetas comunes
+          const tryFolders = ['tmp_20251104_113717', 'tmp_20251104_120000']; // fallback manual
+          // Buscar la carpeta tmp_ más reciente detectando por estructura existente
+          const cacheBase = base;
+          fetch(cacheBase)
+            .catch(() => console.warn('No se pudo acceder a data/cache directamente'))
+            .finally(() => {
+              // Probar detección automática de carpeta tmp_
+              // Enumerar con XMLHttpRequest (funciona localmente en XAMPP)
+              try {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', cacheBase, false);
+                xhr.send();
+                const matches = xhr.responseText.match(/tmp_\d{8}_\d{6}/g);
+                if (matches && matches.length > 0) {
+                  const folder = `${cacheBase}${matches[matches.length - 1]}`;
+                  console.log(`📦 Carpeta detectada: ${folder}`);
+                  loadAvailableLayers(folder);
+                } else {
+                  console.warn('⚠️ No se detectó carpeta tmp_*. Se usará la más reciente conocida.');
+                  loadAvailableLayers(`${cacheBase}${tryFolders[0]}`);
+                }
+              } catch (e) {
+                console.warn('⚠️ Detección automática falló:', e);
+                loadAvailableLayers(`${cacheBase}${tryFolders[0]}`);
+              }
+            });
+        });
+    })
+    .catch(() => console.error('No se pudo acceder al directorio data/cache/'));
+}
 
-// =====================================================
-// 4. FUNCIÓN: aplicar configuración de popups
-// -----------------------------------------------------
-// Lee el popup_config.json de la carpeta actual (una sola vez)
-// y aplica la configuración a cada feature de la capa.
-// =====================================================
+// === 6. POPUPS (sin cambios) ===
 function applyPopupToFeature(layerName, feature, layer) {
-  // Si ya tenemos la configuración cargada, aplicarla directamente
   if (popupConfigs[layerName]) {
     bindPopupFromConfig(layerName, feature, layer);
     return;
   }
-
-  // Ruta del archivo popup_config.json
-  const configPath = `data/cache/${window.currentCacheFolder}/popup_config.json`;
-
-  // Cargar solo una vez por capa
+  const configPath = `${currentCacheFolder}/popup_config.json`;
   fetch(configPath)
-    .then(res => {
-      if (!res.ok) throw new Error("popup_config.json no encontrado");
-      return res.json();
-    })
-    .then(config => {
-      popupConfigs[layerName] = config;
+    .then(res => res.ok ? res.json() : {})
+    .then(cfg => {
+      popupConfigs[layerName] = cfg;
       bindPopupFromConfig(layerName, feature, layer);
     })
-    .catch(() => {
-      // Si no existe el archivo, registrar vacío para evitar fetch redundantes
-      popupConfigs[layerName] = {};
-    });
+    .catch(() => { popupConfigs[layerName] = {}; });
 }
 
-
-// =====================================================
-// 5. FUNCIÓN AUXILIAR: vincular popup a una feature
-// -----------------------------------------------------
-// Crea el contenido HTML del popup según los campos
-// seleccionados por el productor en popup_config.json.
-// =====================================================
 function bindPopupFromConfig(layerName, feature, layer) {
-  const config = popupConfigs[layerName];
-  if (config && config[layerName]) {
-    const fields = config[layerName];
-    const html = fields
+  const cfg = popupConfigs[layerName];
+  if (cfg && cfg[layerName]) {
+    const html = cfg[layerName]
       .map(f => `<strong>${f}:</strong> ${feature.properties[f] ?? ''}`)
       .join('<br>');
     layer.bindPopup(html);
