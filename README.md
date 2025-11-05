@@ -67,9 +67,3 @@ pc2web/
   - [Leaflet 1.9.x](https://leafletjs.com/)
   - [Bootstrap 5.x](https://getbootstrap.com/)
 - **Navegador moderno:** Chrome, Firefox, Edge o Brave
-
----
-
-## Estado actual
-Estructura base limpia creada. Sin lógica implementada.  
-Listo para iniciar desde **Issue 1 – Esqueleto base limpio** según el archivo `Issues.txt`.
