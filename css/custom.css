@@ -1,128 +1,53 @@
-/* =============================================
-   pc2webmap - custom.css
-   Estilos base y layout responsive
-   ============================================= */
+/* css/custom.css
+   Layout full-screen sin scroll: navbar fija arriba, footer fijo abajo,
+   panel izquierdo y mapa ocupan toda la altura visible.
+*/
 
-/* Reset general */
 html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
-  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  overflow: hidden; /* evita scroll */
 }
 
-/* Layout general */
-body {
-  display: flex;
-  flex-direction: column;
+/* Contenedor principal: ocupa todo menos navbar y footer */
+#app-main {
+  position: absolute;
+  top: 56px; /* altura navbar Bootstrap fixed-top */
+  bottom: 40px; /* altura footer fixed-bottom */
+  left: 0;
+  right: 0;
+  height: calc(100vh - 56px - 40px);
+}
+
+/* Panel izquierdo */
+#left-panel {
+  height: 100%;
+  overflow-y: auto;
+  border-right: 1px solid #ddd;
   background-color: #f8f9fa;
 }
 
-/* Navbar fija arriba */
-.navbar {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  z-index: 1030; /* superior a leaflet controls */
+/* Panel derecho (mapa) */
+#map-panel {
+  height: 100%;
+  overflow: hidden;
 }
 
-/* Espaciado para el contenido bajo la navbar */
-main {
-  margin-top: 56px; /* altura estándar de navbar */
-  margin-bottom: 40px; /* deja espacio para el footer fijo */
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 96px);
-}
-
-/* Contenedor del mapa */
 #map {
-  flex: 1;
   width: 100%;
-  height: calc(100vh - 96px); /* ajustado por navbar y footer */
-  position: relative;
-  z-index: 1;
-  background-color: #eaeaea;
+  height: 100%;
 }
 
-/* Footer fijo abajo */
-footer {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background-color: #212529;
-  color: #f8f9fa;
-  text-align: center;
-  padding: 0.5rem 0;
-  font-size: 0.85rem;
+/* Leyendas */
+.legend-box {
+  border: 1px solid #ddd;
+  border-radius: .25rem;
+  padding: .5rem .75rem;
+  background: #fff;
+  margin-bottom: .5rem;
 }
-
-/* Botones del menú */
-.navbar .btn {
-  font-size: 0.85rem;
-  padding: 0.3rem 0.8rem;
-}
-
-/* Responsive tweak */
-@media (max-width: 768px) {
-  .navbar .btn {
-    margin-bottom: 4px;
-    width: 100%;
-  }
-}
-
-/* ======================================================
-   Ajustes específicos para Leaflet
-   ====================================================== */
-
-/* Asegura que los controles Leaflet estén sobre el mapa */
-.leaflet-control {
-  z-index: 1045 !important; /* más alto que la navbar (1030) */
-}
-
-/* ======================================================
-   Control de capas (Leaflet) - estilo refinado
-   ====================================================== */
-.leaflet-control-layers {
-  position: absolute !important;
-  top: 70px !important;   /* justo debajo de la navbar */
-  right: 10px !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  border-radius: 8px !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  padding: 8px 10px;
-  min-width: 170px;              /* 🔹 más ancho para que el texto entre cómodo */
-  font-size: 0.9rem;
-  line-height: 1.4;
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  z-index: 1045 !important;      /* asegurar que quede por encima del mapa */
-}
-
-/* Mejor legibilidad del texto dentro del control */
-.leaflet-control-layers label {
-  color: #222;
-  cursor: pointer;
-  margin-bottom: 3px;
-}
-
-/* Ajuste de la lista interna de capas */
-.leaflet-control-layers-list {
-  max-height: 250px;
-  overflow-y: auto;
-}
-
-/* Etiquetas de las capas */
-.leaflet-control-layers-overlays label {
-  font-weight: 500;
-  font-size: 14px;
-  color: #222;
-}
-
-/* Escala Leaflet (si se usa) visible sobre el mapa */
-.leaflet-control-scale {
-  z-index: 1045 !important;
+.legend-title {
+  font-weight: 600;
+  margin-bottom: .25rem;
 }

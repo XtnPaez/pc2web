@@ -1,0 +1,33 @@
+# ==========================================
+# pc2web - Exclusiones del repositorio Git
+# ==========================================
+
+# --- Archivos y carpetas temporales ---
+*.tmp
+*.bak
+*.log
+
+# --- Subidas del productor ---
+/data/input/uploads/*
+!/data/input/uploads/.gitkeep  # conserva la carpeta vacía
+
+# --- Carpetas de cache generadas ---
+/data/cache/*
+!/data/cache/.gitkeep
+
+# --- Exportaciones finales ---
+/build/export/*
+!/build/export/.gitkeep
+
+# --- Logs ---
+/logs/*
+!/logs/.gitkeep
+
+# --- Archivos del sistema ---
+.DS_Store
+Thumbs.db
+
+# --- Archivos de configuración locales ---
+/vendor/
+/node_modules/
+.env

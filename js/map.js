@@ -1,150 +1,163 @@
-// =============================================
-// pc2webmap - map.js (auto‐detector de carpeta cache)
-// ---------------------------------------------
-// Carga capas en modo productor y export.
-// Detecta automáticamente la carpeta tmp_* más reciente.
-// =============================================
+// js/map.js
+// Inicialización del mapa Leaflet con dos mapas base: Argenmap (WMS) y OSM (tiles).
+// Incluye Layer Control y wiring para una futura lista de capas en el panel izquierdo.
+// En esta etapa no se consumen datos reales: se dejan hooks para integrar layers.json del validador.
 
-// === 1. MAPA BASE ===
-const map = L.map('map', { center: [-38.4, -63.6], zoom: 4 });
+// ======= Estado y referencias DOM =======
+let map;                           // Instancia Leaflet
+let baseLayers = {};               // Capas base para el control
+const overlayLayers = {};          // Capas vectoriales activables por checkbox (id -> L.GeoJSON/L.LayerGroup)
+const legends = {};                // Leyendas por capa (id -> HTML string)
+const layerListEl = document.getElementById('layerList');
+const legendContainerEl = document.getElementById('legendContainer');
 
-const argenmap = L.tileLayer(
-  'https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/capabaseargenmap@EPSG%3A3857@png/{z}/{x}/{-y}.png',
-  { attribution: '&copy; IGN - Argenmap' }
-).addTo(map);
+// ======= Inicialización del mapa =======
+document.addEventListener('DOMContentLoaded', () => {
+  initMap();
+  // Hook de ejemplo: poblar lista de capas cuando tengamos layers.json
+  // loadLayersFromCache(); // Se implementará en Issue 3/4
 
-const osm = L.tileLayer(
-  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  { attribution: '&copy; OpenStreetMap contributors' }
-);
+  // Ejemplo opcional: si quisieras ver un placeholder de capa, descomentar:
+  // injectPlaceholderLayer();
+});
 
-L.control.layers({ "Argenmap": argenmap, "OpenStreetMap": osm }, null, { collapsed: true }).addTo(map);
+// ======= Función principal para configurar mapa y bases =======
+function initMap() {
+  // Centro aproximado de Argentina
+  map = L.map('map', {
+    center: [-40.4161, -63.6167],
+    zoom: 4,
+    zoomControl: true,
+  });
 
-// === 2. VARIABLES GLOBALES ===
-const overlayMaps = {};
-const popupConfigs = {};
-let currentCacheFolder = null;
+  // Capa base OSM (tiles)
+  const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap'
+  });
 
-// === 3. DETECTAR MODO EXPORT ===
-const isExport = window.location.pathname.includes('/build/export/');
-console.log(`🧭 Modo actual: ${isExport ? 'EXPORTACIÓN' : 'PRODUCTOR'}`);
+  // Capa base Argenmap (WMS IGN)
+  // Layer común: "capabaseargenmap"
+  const argenmap = L.tileLayer('https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/capabaseargenmap@EPSG%3A3857@png/{z}/{x}/{-y}.png', {
+    minZoom: 1, 
+    maxZoom: 20,  
+    attribution: 'Argenmap-IGN'
+  });
+  argenmap.addTo(map);
 
-// === 4. FUNCIÓN PRINCIPAL ===
-function loadAvailableLayers(cacheFolder) {
-  currentCacheFolder = cacheFolder;
-  const jsonPath = `${cacheFolder}/layers.json`;
-  console.log(`📂 Buscando ${jsonPath}`);
+  // Agregar ambas al control. Activamos OSM por defecto.
+  baseLayers = {
+    'OSM': osm,
+    'Argenmap': argenmap
+  };
+  
+  // Control de capas: bases y, más adelante, overlays
+  L.control.layers(baseLayers, overlayLayers, { position: 'topright', collapsed: true }).addTo(map);
 
-  fetch(jsonPath)
-    .then(r => {
-      if (!r.ok) throw new Error(`No se encontró ${jsonPath}`);
-      return r.json();
-    })
-    .then(layers => {
-      const arr = Array.isArray(layers) ? layers : [layers];
-      console.log(`✅ ${arr.length} capa(s) detectada(s)`);
-
-      const panel = document.getElementById('layer-list');
-      if (panel) panel.innerHTML = '';
-
-      arr.forEach(info => {
-        fetch(info.geojson)
-          .then(res => res.json())
-          .then(data => {
-            const layer = L.geoJSON(data, {
-              onEachFeature: (f, l) => applyPopupToFeature(info.name, f, l)
-            });
-
-            overlayMaps[info.name] = layer;
-
-            if (panel) {
-              const div = document.createElement('div');
-              div.classList.add('form-check', 'mb-1');
-              div.innerHTML = `
-                <input class="form-check-input" type="checkbox" id="chk_${info.name}">
-                <label class="form-check-label" for="chk_${info.name}">
-                  ${info.name}
-                </label>`;
-              panel.appendChild(div);
-              const chk = document.getElementById(`chk_${info.name}`);
-              chk.addEventListener('change', e => {
-                e.target.checked ? layer.addTo(map) : map.removeLayer(layer);
-              });
-            } else {
-              layer.addTo(map);
-              console.log(`🟢 Capa "${info.name}" agregada automáticamente`);
-            }
-          })
-          .catch(err => console.error(`Error cargando ${info.name}:`, err));
-      });
-    })
-    .catch(err => console.error('Error leyendo layers.json:', err));
+  // Corrige el tamaño inicial tras aplicar los offsets CSS
+  setTimeout(() => map.invalidateSize(), 250);
 }
 
-// === 5. AUTO-DETECCIÓN DE CARPETA CACHE (solo export) ===
-if (isExport) {
-  // Intentar detectar automáticamente la carpeta tmp_* dentro de data/cache/
-  fetch('data/cache/')
-    .then(() => {
-      // Usar fetch() sobre layers.json conocido dentro del export
-      const base = 'data/cache/';
-      fetch(base)
-        .then(() => {
-          // Hacer una pequeña solicitud HEAD a listar contenido (solo local, no server)
-          // Como alternativa, probar múltiples carpetas comunes
-          const tryFolders = ['tmp_20251104_113717', 'tmp_20251104_120000']; // fallback manual
-          // Buscar la carpeta tmp_ más reciente detectando por estructura existente
-          const cacheBase = base;
-          fetch(cacheBase)
-            .catch(() => console.warn('No se pudo acceder a data/cache directamente'))
-            .finally(() => {
-              // Probar detección automática de carpeta tmp_
-              // Enumerar con XMLHttpRequest (funciona localmente en XAMPP)
-              try {
-                const xhr = new XMLHttpRequest();
-                xhr.open('GET', cacheBase, false);
-                xhr.send();
-                const matches = xhr.responseText.match(/tmp_\d{8}_\d{6}/g);
-                if (matches && matches.length > 0) {
-                  const folder = `${cacheBase}${matches[matches.length - 1]}`;
-                  console.log(`📦 Carpeta detectada: ${folder}`);
-                  loadAvailableLayers(folder);
-                } else {
-                  console.warn('⚠️ No se detectó carpeta tmp_*. Se usará la más reciente conocida.');
-                  loadAvailableLayers(`${cacheBase}${tryFolders[0]}`);
-                }
-              } catch (e) {
-                console.warn('⚠️ Detección automática falló:', e);
-                loadAvailableLayers(`${cacheBase}${tryFolders[0]}`);
-              }
-            });
-        });
-    })
-    .catch(() => console.error('No se pudo acceder al directorio data/cache/'));
+// ======= Integración futura con layers.json =======
+// Esta función será reemplazada para leer /data/cache/tmp_YYYY.../layers.json (Issue 3/4)
+async function loadLayersFromCache() {
+  // Ejemplo de dónde se obtendría el JSON activo:
+  // const resp = await fetch('data/cache/<tmp_activa>/layers.json');
+  // const cfg = await resp.json();
+  // buildLayerList(cfg.layers);
 }
 
-// === 6. POPUPS (sin cambios) ===
-function applyPopupToFeature(layerName, feature, layer) {
-  if (popupConfigs[layerName]) {
-    bindPopupFromConfig(layerName, feature, layer);
-    return;
+// Construye la lista del panel izquierdo y crea capas Leaflet vacías por ahora
+function buildLayerList(layersConfig) {
+  // Limpieza previa
+  layerListEl.innerHTML = '';
+  for (const item of layersConfig) {
+    // item.id, item.name, item.path, item.legendHTML, etc. según def. de validation.php
+    const id = item.id;
+    const label = item.name || id;
+
+    // Crear entrada con checkbox
+    const entry = document.createElement('label');
+    entry.className = 'list-group-item';
+    entry.innerHTML = `
+      <input class="form-check-input me-1 layer-toggle" type="checkbox" data-layer-id="${id}">
+      ${label}
+    `;
+    layerListEl.appendChild(entry);
+
+    // Inicializar contenedores en memoria
+    overlayLayers[id] = L.layerGroup(); // luego se reemplaza por L.geoJSON()
+    legends[id] = item.legendHTML || `<div class="legend-box"><div class="legend-title">${label}</div><div>Sin estilo SLD aplicado</div></div>`;
   }
-  const configPath = `${currentCacheFolder}/popup_config.json`;
-  fetch(configPath)
-    .then(res => res.ok ? res.json() : {})
-    .then(cfg => {
-      popupConfigs[layerName] = cfg;
-      bindPopupFromConfig(layerName, feature, layer);
-    })
-    .catch(() => { popupConfigs[layerName] = {}; });
+
+  // Delegación de eventos para toggles
+  layerListEl.addEventListener('change', onLayerToggle);
 }
 
-function bindPopupFromConfig(layerName, feature, layer) {
-  const cfg = popupConfigs[layerName];
-  if (cfg && cfg[layerName]) {
-    const html = cfg[layerName]
-      .map(f => `<strong>${f}:</strong> ${feature.properties[f] ?? ''}`)
-      .join('<br>');
-    layer.bindPopup(html);
+// Maneja alta/baja de capas en mapa y su leyenda asociada
+function onLayerToggle(e) {
+  const tgt = e.target;
+  if (!tgt.classList.contains('layer-toggle')) return;
+
+  const layerId = tgt.getAttribute('data-layer-id');
+  const active = tgt.checked;
+
+  // Si no existe la capa aún, no hacemos nada
+  if (!overlayLayers[layerId]) return;
+
+  if (active) {
+    // Agregar la capa al mapa
+    overlayLayers[layerId].addTo(map);
+
+    // Inyectar leyenda
+    const box = document.createElement('div');
+    box.className = 'legend-wrapper';
+    box.setAttribute('data-legend-id', layerId);
+    box.innerHTML = legends[layerId] || '';
+    legendContainerEl.appendChild(box);
+  } else {
+    // Remover capa y su leyenda
+    map.removeLayer(overlayLayers[layerId]);
+    const toRemove = legendContainerEl.querySelector(`.legend-wrapper[data-legend-id="${layerId}"]`);
+    if (toRemove) toRemove.remove();
   }
+}
+
+// ======= Placeholder opcional para probar UI antes de validation.php =======
+function injectPlaceholderLayer() {
+  // Simula 1 capa disponible
+  const fakeCfg = {
+    layers: [
+      {
+        id: 'ejemplo_deptos',
+        name: 'Departamentos (ejemplo)',
+        legendHTML: `
+          <div class="legend-box">
+            <div class="legend-title">Departamentos</div>
+            <div>Relleno gris, borde oscuro</div>
+          </div>
+        `
+      }
+    ]
+  };
+  buildLayerList(fakeCfg.layers);
+
+  // Capa vectorial ficticia: un polígono suelto en La Pampa
+  const ejemploGeo = {
+    "type": "FeatureCollection",
+    "features": [{
+      "type": "Feature",
+      "properties": {"nombre":"Ejemplo"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-65.5,-38.5],[-65.0,-38.5],[-65.0,-38.0],[-65.5,-38.0],[-65.5,-38.5]
+        ]]
+      }
+    }]
+  };
+  const lyr = L.geoJSON(ejemploGeo, {
+    style: { color: "#333", weight: 1, fillColor: "#bbb", fillOpacity: 0.5 }
+  });
+  overlayLayers['ejemplo_deptos'] = lyr; // reemplazo del layerGroup vacío
 }

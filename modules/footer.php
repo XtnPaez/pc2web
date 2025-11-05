@@ -1,8 +1,10 @@
 <?php
-// =============================================
-// pc2webmap - footer.php
-// =============================================
+// modules/footer.php
+// Footer fijo inferior con copy y año centrados
+$year = date('Y');
 ?>
-<footer class="bg-dark text-light text-center py-2 fixed-bottom">
-    <small>© 2025 - pc2webmap</small>
+<footer class="footer mt-auto py-2 bg-light border-top fixed-bottom">
+  <div class="container text-center small text-muted">
+    &copy; <?php echo $year; ?> — pc2web
+  </div>
 </footer>

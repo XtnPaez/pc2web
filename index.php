@@ -1,114 +1,76 @@
 <?php
-/**
- * ============================================================
- * pc2webmap - index.php
- * ------------------------------------------------------------
- * Interfaz principal del modo PRODUCTOR.
- *
- * Estructura:
- *   - Incluye navbar y footer desde /modules/
- *   - Muestra panel lateral (capas) + mapa (Leaflet)
- *   - Se adapta al layout definido en /css/custom.css
- *
- * En modo "productor" se muestran herramientas de edición.
- * En modo "usuario" (exportado) se ocultan automáticamente.
- *
- * Dependencias:
- *   - Bootstrap 5.x
- *   - Leaflet 1.9.x
- *   - /js/map.js
- *   - /js/producer.js
- *   - /css/custom.css
- * ============================================================
- */
-?>
-<!DOCTYPE html>
+// index.php
+// Interfaz principal modo PRODUCTOR para pc2web
+// Estructura: Navbar fijo, footer fijo, layout full-height con panel izquierdo (capas) y panel derecho (mapa)
+// Dependencias en desarrollo: Bootstrap 5 y Leaflet 1.9 vía CDN
+// Nota: En exportación futura se copiarán/incrustarán para funcionar offline.
+
+?><!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pc2webmap</title>
+  <meta charset="utf-8">
+  <title>pc2web — Productor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- ==========================
-       Librerías externas
-  =========================== -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://unpkg.com/leaflet/dist/leaflet.css" rel="stylesheet" />
+  <!-- Bootstrap 5.x CSS (dev) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- ==========================
-       Estilos propios
-  =========================== -->
-  <link href="css/custom.css" rel="stylesheet" />
+  <!-- Leaflet 1.9.x CSS (dev) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <!-- Estilos del proyecto -->
+  <link rel="stylesheet" href="css/custom.css">
 </head>
+<body class="d-flex flex-column">
 
-<!-- 
-  data-mode="producer" indica modo de trabajo.
-  Al exportar, este atributo se reemplaza por data-mode="user".
--->
-<body data-mode="producer">
+  <!-- NAVBAR -->
+  <?php include __DIR__ . '/modules/navbar.php'; ?>
 
-  <!-- =========================================================
-       NAVBAR (modo productor)
-       ========================================================= -->
-  <?php include 'modules/navbar.php'; ?>
+  <!-- CONTENIDO PRINCIPAL: layout de dos paneles -->
+  <main id="app-main" class="container-fluid flex-grow-1">
+    <div class="row g-0 h-100">
+      <!-- Panel izquierdo: listado de capas y leyendas -->
+      <aside id="left-panel" class="col-12 col-md-4 col-lg-3 border-end">
+        <div class="p-3 h-100 d-flex flex-column">
+          <h6 class="mb-3">Capas disponibles</h6>
 
-  <!-- =========================================================
-       CONTENIDO PRINCIPAL
-       ========================================================= -->
-  <main class="flex-fill">
-    <div class="d-flex flex-row h-100">
-      
-      <!-- =====================================================
-           PANEL LATERAL IZQUIERDO
-           ===================================================== -->
-      <div id="sidebar"
-           class="border-end bg-light p-2"
-           style="width:300px; overflow-y:auto;">
-        <div id="layer-list" class="mt-2">
-          <!-- Las capas validadas se cargarán aquí dinámicamente -->
+          <!-- Contenedor dinámico de capas subidas y validadas -->
+          <!-- Más adelante se poblará desde validation.php (layers.json) -->
+          <div id="layerList" class="list-group list-group-flush small flex-grow-1 overflow-auto">
+            <!-- Ejemplos de marcador de posición. Se eliminarán cuando integremos el validador -->
+            <!--
+            <label class="list-group-item">
+              <input class="form-check-input me-1 layer-toggle" type="checkbox" data-layer-id="ejemplo_deptos">
+              Departamentos (ejemplo)
+            </label>
+            -->
+          </div>
+
+          <!-- Leyendas asociadas a capas -->
+          <div id="legendContainer" class="mt-3 small">
+            <!-- Las leyendas de cada capa se inyectarán aquí cuando el checkbox esté activo -->
+          </div>
         </div>
-      </div>
+      </aside>
 
-      <!-- =====================================================
-           CONTENEDOR PRINCIPAL DEL MAPA
-           ===================================================== -->
-      <div class="flex-grow-1 position-relative">
-        <div id="map"></div>
-      </div>
-
+      <!-- Panel derecho: mapa -->
+      <section id="map-panel" class="col-12 col-md-8 col-lg-9">
+        <div id="map" class="w-100 h-100"></div>
+      </section>
     </div>
   </main>
 
-  <!-- =========================================================
-       FOOTER (modo productor)
-       ========================================================= -->
-  <?php include 'modules/footer.php'; ?>
+  <!-- FOOTER -->
+  <?php include __DIR__ . '/modules/footer.php'; ?>
 
-  <!-- =========================================================
-       LIBRERÍAS JS
-       ========================================================= -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Bootstrap 5.x JS (dev) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- =========================================================
-       SCRIPTS DEL PROYECTO
-       ========================================================= -->
-  <script src="js/map.js"></script>       <!-- Inicialización del mapa -->
-  <script src="js/producer.js"></script>  <!-- Control de modo productor / validación / exportación -->
+  <!-- Leaflet 1.9.x JS (dev) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- =========================================================
-       FIX: Ajustar mapa tras renderizado
-       ========================================================= -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      setTimeout(() => {
-        if (window.map && window.map.invalidateSize) {
-          window.map.invalidateSize();
-          console.log("🧭 Leaflet: tamaño del mapa ajustado correctamente.");
-        }
-      }, 500);
-    });
-  </script>
-
+  <!-- Scripts del proyecto -->
+  <script src="js/map.js"></script>
+  <script src="js/producer.js"></script>
 </body>
 </html>

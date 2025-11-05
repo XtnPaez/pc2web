@@ -1,115 +1,175 @@
-// =============================================
-// pc2webmap - producer.js
-// ---------------------------------------------
-// Control general del modo PRODUCTOR:
-//   - Ejecuta la validación de insumos (GeoJSON + SLD)
-//   - Carga las capas validadas en el panel izquierdo
-//   - Gestiona la configuración de popups (más adelante)
-// =============================================
+// js/producer.js
+// Control del modo productor: configuración de proyecto y subida de capas
+// -------------------------------------------------------------
 
-
-// =====================================================
-// 1. INICIALIZACIÓN DEL BOTÓN "VALIDAR CAPAS"
-// =====================================================
 document.addEventListener('DOMContentLoaded', () => {
-  const btnValidate = document.getElementById('btnValidate');
-  if (!btnValidate) return;
+  // Botón: Nombre del proyecto
+  const btnProject = document.getElementById('btn-project');
+  if (btnProject) btnProject.addEventListener('click', showProjectModal);
 
-  btnValidate.addEventListener('click', () => {
-    ejecutarValidacion();
-  });
+  // Botón: Subir capa
+  const btnUpload = document.getElementById('btn-upload');
+  if (btnUpload) btnUpload.addEventListener('click', showUploadModal);
 });
 
+// =============================================================
+// Modal de configuración del proyecto
+// =============================================================
+function showProjectModal() {
+  const html = `
+  <div class="modal fade" id="projectModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Configuración del proyecto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nombre del proyecto (máx. 24 caracteres)</label>
+            <input type="text" class="form-control" id="projectNameInput" maxlength="24" placeholder="Ej: Mapa Social">
+          </div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="customFooterChk">
+            <label class="form-check-label">Personalizar footer</label>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Texto del footer (máx. 48 caracteres)</label>
+            <input type="text" class="form-control" id="footerInput" maxlength="48" placeholder="Ej: Fuente: Observatorio 2025" disabled>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="button" id="saveProjectBtn" class="btn btn-primary">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
 
-// =====================================================
-// 2. FUNCIÓN PRINCIPAL: ejecutar validación de insumos
-// -----------------------------------------------------
-// Llama a src/core/validate.php, que:
-//   - Verifica la estructura de los archivos en /data/input
-//   - Crea carpeta temporal en /data/cache/tmp_<fecha>/
-//   - Copia los archivos validados (.geojson / .sld)
-//   - Genera el descriptor layers.json
-// Si la validación es correcta, se llama a loadAvailableLayers()
-// =====================================================
-function ejecutarValidacion() {
-  console.log("🧭 Iniciando validación de capas...");
+  const modalEl = document.getElementById('projectModal');
+  const modal = new bootstrap.Modal(modalEl);
+  modal.show();
 
-  fetch('src/core/validate.php')
-    .then(response => response.json())
-    .then(result => {
-      if (result.status === "ok") {
-        console.log("✅ Validación exitosa:", result);
+  // Habilitar/deshabilitar input del footer
+  const chk = modalEl.querySelector('#customFooterChk');
+  const footerInput = modalEl.querySelector('#footerInput');
+  chk.addEventListener('change', () => {
+    footerInput.disabled = !chk.checked;
+    if (!chk.checked) footerInput.value = '';
+  });
 
-        // Extraer nombre de carpeta temporal
-        const cacheFolder = result.path.replace("data/cache/", "");
+  // Guardar configuración temporal (solo en memoria)
+  modalEl.querySelector('#saveProjectBtn').addEventListener('click', () => {
+    const name = modalEl.querySelector('#projectNameInput').value.trim();
+    if (name) {
+      document.getElementById('projectName').textContent = name;
+    }
+    // No se guarda en archivo; se usará solo durante exportación
+    modal.hide();
+    modalEl.remove();
+  });
 
-        // Cargar las capas en el panel izquierdo
-        loadAvailableLayers(cacheFolder);
-
-        // Notificación visual breve
-        showToast("Validación exitosa", "Las capas fueron validadas correctamente.");
-      } else {
-        console.warn("❌ Errores de validación:", result.errors);
-        showToast("Error de validación", result.errors.join(" | "));
-      }
-    })
-    .catch(err => {
-      console.error("⚠️ Error ejecutando validación:", err);
-      showToast("Error inesperado", "No se pudo validar las capas.");
-    });
+  modalEl.addEventListener('hidden.bs.modal', () => modalEl.remove());
 }
 
+// =============================================================
+// Modal de subida de capa
+// =============================================================
+function showUploadModal() {
+  const html = `
+  <div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Subir nueva capa</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="uploadForm" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label class="form-label">Archivo GeoJSON</label>
+              <input type="file" class="form-control" id="geojsonFile" name="geojsonFile" accept=".geojson" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Archivo SLD</label>
+              <input type="file" class="form-control" id="sldFile" name="sldFile" accept=".sld" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Nombre de la capa</label>
+              <input type="text" class="form-control" id="layerName" name="layerName" maxlength="60" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Descripción de la capa</label>
+              <textarea class="form-control" id="layerDesc" name="layerDesc" rows="3" maxlength="500"></textarea>
+            </div>
+          </form>
+          <div id="uploadMessage" class="small mt-2"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" id="submitUpload" class="btn btn-primary">Subir</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
 
-// =====================================================
-// 3. FUNCIÓN AUXILIAR: mostrar notificaciones flotantes
-// -----------------------------------------------------
-// Usa toasts de Bootstrap para informar el resultado
-// de la validación o errores al productor.
-// =====================================================
-function showToast(title, message) {
-  // Crear contenedor de toasts si no existe
-  if (!document.getElementById('toastContainer')) {
-    const container = document.createElement('div');
-    container.id = 'toastContainer';
-    container.className = 'position-fixed top-0 end-0 p-3';
-    container.style.zIndex = 2000;
-    document.body.appendChild(container);
+  const modalEl = document.getElementById('uploadModal');
+  const modal = new bootstrap.Modal(modalEl);
+  modal.show();
+
+  modalEl.querySelector('#submitUpload').addEventListener('click', () => handleUpload(modalEl, modal));
+  modalEl.addEventListener('hidden.bs.modal', () => modalEl.remove());
+}
+
+// =============================================================
+// Envío de archivos y metadatos al servidor
+// =============================================================
+async function handleUpload(modalEl, modal) {
+  const geojson = document.getElementById('geojsonFile').files[0];
+  const sld = document.getElementById('sldFile').files[0];
+  const name = document.getElementById('layerName').value.trim();
+  const desc = document.getElementById('layerDesc').value.trim();
+  const msg = document.getElementById('uploadMessage');
+
+  if (!geojson || !sld || !name) {
+    msg.textContent = 'Debe completar los campos obligatorios.';
+    msg.className = 'text-danger';
+    return;
   }
 
-  // HTML del toast
-  const toastHTML = `
-    <div class="toast align-items-center text-white bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="d-flex">
-        <div class="toast-body">
-          <strong>${title}</strong><br>${message}
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
-      </div>
-    </div>`;
+  const maxSize = 100 * 1024 * 1024;
+  if (geojson.size > maxSize || sld.size > maxSize) {
+    msg.textContent = 'Los archivos no deben superar los 100 MB.';
+    msg.className = 'text-danger';
+    return;
+  }
 
-  // Insertar y mostrar
-  const container = document.getElementById('toastContainer');
-  container.insertAdjacentHTML('beforeend', toastHTML);
+  const base1 = geojson.name.split('.')[0];
+  const base2 = sld.name.split('.')[0];
+  if (base1 !== base2) {
+    msg.textContent = 'Los nombres base deben coincidir.';
+    msg.className = 'text-warning';
+    return;
+  }
 
-  const toastElement = container.lastElementChild;
-  const bsToast = new bootstrap.Toast(toastElement, { delay: 3500 });
-  bsToast.show();
+  const formData = new FormData();
+  formData.append('geojsonFile', geojson);
+  formData.append('sldFile', sld);
+  formData.append('layerName', name);
+  formData.append('layerDesc', desc);
 
-  // Eliminar el toast automáticamente al cerrarse
-  toastElement.addEventListener('hidden.bs.toast', () => {
-    toastElement.remove();
-  });
+  try {
+    const res = await fetch('upload.php', { method: 'POST', body: formData });
+    const result = await res.json();
+    msg.textContent = result.message;
+    msg.className = result.status === 'success' ? 'text-success' : 'text-danger';
+    if (result.status === 'success') {
+      setTimeout(() => { modal.hide(); modalEl.remove(); }, 1500);
+    }
+  } catch (err) {
+    msg.textContent = 'Error al subir capa.';
+    msg.className = 'text-danger';
+  }
 }
-
-
-// =====================================================
-// 4. FUTURO: gestión de configuración de popups
-// -----------------------------------------------------
-// En versiones siguientes, aquí se implementará el flujo
-// que permite al productor definir qué atributos mostrar
-// en cada capa (popup_config.json).
-// =====================================================
-
-// Ejemplo de estructura prevista:
-// function openPopupConfigModal(layerName, fields) { ... }
-// function savePopupConfig(layerName, selectedFields) { ... }
