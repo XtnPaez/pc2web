@@ -1,0 +1,35 @@
+<?php
+// ============================================================
+// modules/navbar.php
+// ------------------------------------------------------------
+// Navbar modo productor. Orden de botones:
+// [Nombre del proyecto] [Subir capa] [Validar capa] [Setear popup] [Exportar]
+// ============================================================
+?>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    <span class="navbar-brand fw-bold">pc2web</span>
+    <div class="ms-auto d-flex gap-2">
+      <!-- Modal A: Nombre del proyecto / Footer -->
+      <button id="btnProjectInfo" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#projectModal">
+        Nombre del proyecto
+      </button>
+      <!-- Modal B: Subir capa -->
+      <button id="btnUploadLayer" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#uploadModal">
+        Subir capa
+      </button>
+      <!-- Validar capas pendientes -->
+      <button id="btnValidate" class="btn btn-outline-warning btn-sm">
+        Validar capa
+      </button>
+      <!-- Setear popup (Issue 5) -->
+      <button id="btnPopup" class="btn btn-outline-light btn-sm" disabled>
+        Setear popup
+      </button>
+      <!-- Exportar -->
+      <button id="btnExport" class="btn btn-success btn-sm" disabled>
+        Exportar
+      </button>
+    </div>
+  </div>
+</nav>

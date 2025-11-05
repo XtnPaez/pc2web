@@ -1,0 +1,51 @@
+/* ============================================================
+   css/custom.css
+   ------------------------------------------------------------
+   Layout estable: mapa visible, sin franja blanca
+   ============================================================ */
+
+/* Pantalla completa sin scroll */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navbar fija arriba */
+nav.navbar {
+  flex: 0 0 56px;
+}
+
+/* Opcional: fuerza altura en el contenedor del mapa */
+.main-container {
+  flex: 1 1 auto;
+  display: flex;
+  overflow: hidden;
+  height: 100%; /* ¡Importante! */
+}
+
+/* Sidebar */
+#sidebar {
+  width: 260px;
+  background-color: #f8f9fa;
+  border-right: 1px solid #dee2e6;
+  overflow-y: auto;
+}
+
+/* Asegura que el mapa ocupe TODO el espacio */
+#mapContainer,
+#map {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+
+
+/* Footer fijo sin franja blanca */
+footer {
+  flex: 0 0 40px;
+  margin: 0;
+}
