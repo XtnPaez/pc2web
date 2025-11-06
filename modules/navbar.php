@@ -2,28 +2,28 @@
 // ============================================================
 // modules/navbar.php
 // ------------------------------------------------------------
-// Navbar modo productor. Orden de botones:
-// [Nombre del proyecto] [Subir capa] [Validar capa] [Setear popup] [Exportar]
+// Navbar modo productor
+// Issue 5: habilita botón “Setear popup” para abrir el modal
 // ============================================================
 ?>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
     <span class="navbar-brand fw-bold">pc2web</span>
     <div class="ms-auto d-flex gap-2">
-      <!-- Modal A: Nombre del proyecto / Footer -->
+      <!-- Modal A -->
       <button id="btnProjectInfo" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#projectModal">
         Nombre del proyecto
       </button>
-      <!-- Modal B: Subir capa -->
+      <!-- Modal B -->
       <button id="btnUploadLayer" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#uploadModal">
         Subir capa
       </button>
-      <!-- Validar capas pendientes -->
+      <!-- Validar -->
       <button id="btnValidate" class="btn btn-outline-warning btn-sm">
         Validar capa
       </button>
-      <!-- Setear popup (Issue 5) -->
-      <button id="btnPopup" class="btn btn-outline-light btn-sm" disabled>
+      <!-- Nuevo: Setear popup -->
+      <button id="btnPopup" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#popupConfigModal">
         Setear popup
       </button>
       <!-- Exportar -->

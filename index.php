@@ -98,22 +98,21 @@
     </div>
   </div>
 
-
   <!-- Contenedor principal (reemplaza el anterior) -->
-<div class="main-container">
-  <!-- Sidebar -->
-  <div id="sidebar" class="bg-light border-end p-3" style="width: 260px;">
-    <h6 class="fw-bold mb-3">Capas cargadas</h6>
-    <div id="layerList" class="form-check">
-      <!-- Capas dinámicas -->
+  <div class="main-container">
+    <!-- Sidebar -->
+    <div id="sidebar" class="bg-light border-end p-3" style="width: 260px;">
+      <h6 class="fw-bold mb-3">Capas cargadas</h6>
+      <div id="layerList" class="form-check">
+        <!-- Capas dinámicas -->
+      </div>
+    </div>
+
+    <!-- Mapa -->
+    <div id="mapContainer">
+      <div id="map"></div>
     </div>
   </div>
-
-  <!-- Mapa -->
-  <div id="mapContainer">
-    <div id="map"></div>
-  </div>
-</div>
 
   <!-- Footer -->
   <?php include_once('modules/footer.php'); ?>
@@ -122,7 +121,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="js/map.js"></script>
-    <script src="js/producer.js"></script>
+  <script src="js/producer.js"></script>
 
 </body>
 </html>
